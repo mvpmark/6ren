@@ -1,0 +1,163 @@
+
+/* 优化的AI解读样式 */
+.full-interpretation {
+    line-height: 1.8;
+    font-size: 16px;
+    color: #333;
+    text-align: justify;
+}
+
+.interpretation-section {
+    margin-bottom: 30px;
+    padding: 25px;
+    background: linear-gradient(135deg, #ffffff 0%, #f9f9ff 100%);
+    border-radius: 15px;
+    border-left: 5px solid #667eea;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.interpretation-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.interpretation-section h3 {
+    font-size: 20px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+}
+
+.interpretation-section p {
+    margin-bottom: 15px;
+    color: #555;
+    line-height: 1.8;
+    margin-left: 40px;
+    font-size: 15px;
+}
+
+.interpretation-section ul {
+    margin-left: 60px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.interpretation-section li {
+    margin-bottom: 12px;
+    position: relative;
+    padding-left: 25px;
+    line-height: 1.7;
+}
+
+.interpretation-section li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #667eea;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.section-icon {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+    text-align: center;
+    line-height: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.highlight-box {
+    background: linear-gradient(135deg, #fff9db 0%, #fff3bf 100%);
+    border: 1px solid #ffd43b;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    margin-left: 40px;
+}
+
+.highlight-box .emoji {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.highlight-box strong {
+    color: #fab005;
+}
+
+.warning-box {
+    background: linear-gradient(135deg, #ffe3e3 0%, #ffc9c9 100%);
+    border: 1px solid #ff6b6b;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    margin-left: 40px;
+}
+
+.warning-box .emoji {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.warning-box strong {
+    color: #fa5252;
+}
+
+.tip-box {
+    background: linear-gradient(135deg, #d3f9d8 0%, #b2f2bb 100%);
+    border: 1px solid #40c057;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    margin-left: 40px;
+}
+
+.tip-box .emoji {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.tip-box strong {
+    color: #2f9e44;
+}
+
+.divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #667eea, transparent);
+    margin: 40px 0;
+}
+
+.interpretation-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 40px;
+    margin-top: 30px;
+}
+
+.interpretation-title::before,
+.interpretation-title::after {
+    content: '✨';
+    margin: 0 15px;
+}
+
+.paragraph {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    border-left: 3px solid #667eea;
+}
+
+.paragraph:last-child {
+    margin-bottom: 0;
+}

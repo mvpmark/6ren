@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛博算卦 - 六爻预测</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- API Key 设置模态框 -->
+        <div id="apiKeyModal" class="modal">
+            <div class="modal-content">
+                <h2>欢迎使用赛博算卦</h2>
+                <p>首次使用需要设置您的 Moonshot API Key</p>
+                <input type="password" id="apiKeyInput" placeholder="请输入您的 Moonshot API Key">
+                <div class="button-group">
+                    <button id="saveApiKeyBtn" class="btn-primary">保存</button>
+                </div>
+                <small>您的 API Key 将保存在本地浏览器中</small>
+            </div>
+        </div>
+
+        <!-- 主界面 -->
+        <header>
+            <h1>赛博算卦</h1>
+            <p class="subtitle">AI驱动的六爻预测 · 探索未来之谜</p>
+        </header>
+
+        <main>
+            <!-- 事件输入区域 -->
+            <section class="input-section">
+                <label for="eventInput">请输入您要占卜的事件：</label>
+                <textarea
+                    id="eventInput"
+                    placeholder="例如：我最近想换工作，不知道是否合适？"
+                    rows="3"
+                ></textarea>
+            </section>
+
+            <!-- 摇卦按钮 -->
+            <section class="action-section">
+                <button id="shakeBtn" class="shake-btn">
+                    <span class="btn-icon">☯</span>
+                    <span class="btn-text">开始摇卦</span>
+                </button>
+            </section>
+
+            <!-- 卦象显示区域 -->
+            <section id="hexagramSection" class="hexagram-section" style="display: none;">
+                <h2>卦象</h2>
+                <div class="hexagram-container">
+                    <!-- 六爻从上到下显示，实际顺序是[5,4,3,2,1,0] -->
+                    <div class="yao-line" data-position="5">
+                        <span class="yao-number">上六</span>
+                        <div class="yao-symbol" data-type=""></div>
+                        <span class="yao-position">最终结果</span>
+                    </div>
+                    <div class="yao-line" data-position="4">
+                        <span class="yao-number">六五</span>
+                        <div class="yao-symbol" data-type=""></div>
+                        <span class="yao-position">最终结果</span>
+                    </div>
+                    <div class="yao-line" data-position="3">
+                        <span class="yao-number">六四</span>
+                        <div class="yao-symbol" data-type=""></div>
+                        <span class="yao-position">此事的发展</span>
+                    </div>
+                    <div class="yao-line" data-position="2">
+                        <span class="yao-number">六三</span>
+                        <div class="yao-symbol" data-type=""></div>
+                        <span class="yao-position">此事的过程</span>
+                    </div>
+                    <div class="yao-line" data-position="1">
+                        <span class="yao-number">六二</span>
+                        <div class="yao-symbol" data-type=""></div>
+                        <span class="yao-position">此事的过程</span>
+                    </div>
+                    <div class="yao-line" data-position="0">
+                        <span class="yao-number">初六</span>
+                        <div class="yao-symbol" data-type=""></div>
+                        <span class="yao-position">此事的开端</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 结果显示区域 -->
+            <section id="resultSection" class="result-section" style="display: none;">
+                <div class="result-container">
+                    <!-- 左侧：图形化卦象展示 -->
+                    <div class="left-column">
+                        <div class="column-header">
+                            <h2>卦象解读</h2>
+                            <p class="column-subtitle">图形化的卦象展示与分析</p>
+                        </div>
+
+                        <div class="hexagram-visual-panel">
+                            <div class="hexagram-visual">
+                                <div id="visualHexagram" class="visual-hexagram">
+                                    <!-- 动态生成的卦象图形 -->
+                                </div>
+                                <div class="hexagram-name" id="hexagramName">
+                                    <!-- 卦名 -->
+                                </div>
+                            </div>
+                            <div class="yin-yang-decoration"></div>
+                        </div>
+
+                        <div class="event-summary-card">
+                            <div class="event-summary">
+                                <p><strong>占问：</strong><span id="eventTextDisplay"></span></p>
+                            </div>
+                        </div>
+
+                        <div class="hexagram-structure-panel">
+                            <div class="hexagram-structure">
+                                <h3><span class="section-icon">☯</span>卦象结构</h3>
+                                <div class="structure-display">
+                                    <div class="trigram">
+                                        <div class="trigram-title">上卦（外卦）</div>
+                                        <div class="trigram-visual" id="upperTrigram"></div>
+                                        <div class="trigram-meaning" id="upperMeaning"></div>
+                                    </div>
+                                    <div class="trigram">
+                                        <div class="trigram-title">下卦（内卦）</div>
+                                        <div class="trigram-visual" id="lowerTrigram"></div>
+                                        <div class="trigram-meaning" id="lowerMeaning"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="yao-analysis-panel">
+                            <div class="yao-analysis">
+                                <h3><span class="section-icon">📋</span>六爻详解</h3>
+                                <div class="yao-list" id="yaoList">
+                                    <!-- 动态生成的六爻注解 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="summary-info-panel">
+                            <h3><span class="section-icon">📊</span>卦象总结</h3>
+                            <div class="summary-info">
+                                <div class="summary-item">
+                                    <div class="summary-icon">🌟</div>
+                                    <div class="summary-content">
+                                        <h4>卦象总论</h4>
+                                        <p id="overallSummary"></p>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-icon">🎯</div>
+                                    <div class="summary-content">
+                                        <h4>发展趋势</h4>
+                                        <p id="trendDescription"></p>
+                                    </div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-icon">💡</div>
+                                    <div class="summary-content">
+                                        <h4>建议指导</h4>
+                                        <p id="guidanceDescription"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：AI文字分析 -->
+                    <div class="right-column">
+                        <div class="column-header">
+                            <h2>AI深度解读</h2>
+                            <p class="column-subtitle">智能分析与专业指导</p>
+                        </div>
+
+                        <div class="ai-prediction-panel">
+                            <div class="panel-icon">
+                                <span class="icon-robot">🤖</span>
+                            </div>
+
+                            <div class="loading" id="loadingIndicator" style="display: none;">
+                                <div class="spinner"></div>
+                                <p>AI正在为您解读卦象...</p>
+                            </div>
+
+                            <div id="fullInterpretation" class="full-interpretation">
+                                <!-- AI解读内容 -->
+                            </div>
+                        </div>
+
+                        <div class="ai-features-info">
+                            <div class="feature-item">
+                                <span class="feature-icon">🎯</span>
+                                <span>精准预测</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">💡</span>
+                                <span>专业建议</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">⏰</span>
+                                <span>时机分析</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 设置按钮 -->
+        <footer>
+            <button id="settingsBtn" class="icon-btn" title="设置">
+                ⚙️
+            </button>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
