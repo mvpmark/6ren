@@ -85,8 +85,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // 生成卦象描述
         const hexagramDesc = generateHexagramDescription(hexagramLines);
 
-        // 调用 AI API 解读卦象
-        getAIInterpretation(apiKey, eventText, hexagramLines, hexagramDesc);
+        // 显示AI解读容器
+        document.getElementById('aiInterpretationContainer').style.display = 'block';
+        document.getElementById('loadingIndicator').style.display = 'flex';
+
+        // 调用 AI API 解读卦象（同时生成两个版本）
+        loadBothInterpretations(apiKey, eventText, hexagramLines, hexagramDesc);
     });
 
     // 点击次数统计
@@ -434,7 +438,230 @@ ${hexagramDesc}
         }
     }
 
-    // 显示解读结果
+    // 同时加载两个版本的解读
+    async function loadBothInterpretations(apiKey, eventText, hexagramLines, hexagramDesc) {
+        try {
+            // 构建卦象图案
+            const hexagramSymbols = hexagramLines.map(line =>
+                line === 1 ? '===爻===' : '==爻=='
+            ).reverse().join('\n');
+
+            // 生成专业版本的prompt
+            const professionalPrompt = `您是一位精通《易经》六爻预测的占卜大师。现在有一位用户想要占卜以下事件：
+
+"${eventText}"
+
+用户通过摇卦得到了以下卦象：
+${hexagramSymbols}
+
+其中：
+- ===爻=== 代表阳爻（实线）
+- ==爻== 代表阴爻（断线）
+
+卦象说明（从下到上）：
+${hexagramDesc}
+
+请您作为占卜大师，对这个卦象进行详细的解读和预测：
+
+## 解读要求：
+
+1. **卦象分析**：
+   - 先说明这个卦象在《易经》中对应的是哪个卦（根据上下卦组合）
+   - 分析卦象的阴阳分布特征
+   - 说明每一爻的含义和象征
+
+2. **事件预测**：
+   - 结合用户占卜的具体事件，给出针对性的预测
+   - 说明此事的吉凶趋势
+   - 分析可能遇到的机遇和挑战
+
+3. **时间预测**：
+   - 预测此事发展的大致时间节点
+   - 说明何时是行动的最佳时机
+   - 提醒需要注意的时间点
+
+4. **具体建议**：
+   - 给出3-5条具体可行的建议
+   - 说明应当采取的策略和态度
+   - 提醒需要避免的错误
+
+5. **综合总结**：
+   - 总结整体趋势（吉/凶/平）
+   - 给出最终的建议和祝福
+
+请用专业、优雅的语言回答，体现《易经》的深邃智慧。不要包含任何 markdown 格式，纯文本即可。语言要简洁明了，避免过于晦涩的术语。`;
+
+            // 生成简单版本的prompt
+            const simplePrompt = `您是一位精通《易经》六爻预测的占卜大师。现在有一位用户想要占卜以下事件：
+
+"${eventText}"
+
+用户通过摇卦得到了以下卦象：
+${hexagramSymbols}
+
+其中：
+- ===爻=== 代表阳爻（实线）
+- ==爻== 代表阴爻（断线）
+
+卦象说明（从下到上）：
+${hexagramDesc}
+
+请用非常通俗易懂、简明扼要的大白话为用户解读这个卦象：
+
+## 解读要求（一定要通俗易懂！）：
+
+1. **总体概括**：
+   - 用一句话告诉我这卦好不好
+   - 这件事能不能成？大概会怎么样？
+
+2. **具体情况**：
+   - 这件事发展过程中需要注意什么
+   - 有没有什么坑要避免？
+   - 有没有好机会要抓住？
+
+3. **行动建议**：
+   - 用最直白的语言给我3-4条建议
+   - 告诉我该做什么，不该做什么
+
+4. **时间安排**：
+   - 什么时候行动比较好？
+   - 什么时候要耐心等待？
+
+请记住：用户要的是大白话，不要用专业术语，要像朋友聊天一样解释清楚！`;
+
+            // 同时调用两个版本的API
+            const [professionalResponse, simpleResponse] = await Promise.all([
+                fetch('https://api.moonshot.cn/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        "model": "kimi-k2-0905-preview",
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "你是一位精通《易经》六爻预测的占卜大师，有30年的占卜经验。你不仅深谙易经理论，还具备丰富的人生阅历。你的解读要专业准确，语言要优雅得体，能给人智慧和启发。"
+                            },
+                            {
+                                "role": "user",
+                                "content": professionalPrompt
+                            }
+                        ],
+                        "stream": false,
+                        "max_tokens": 3000,
+                        "temperature": 0.7,
+                        "top_p": 0.9
+                    })
+                }),
+                fetch('https://api.moonshot.cn/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        "model": "kimi-k2-0905-preview",
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": "你是一位精通《易经》六爻预测的占卜大师，但你更擅长用通俗易懂的大白话为用户解卦。你要用朋友聊天的方式，把复杂的卦象说得清清楚楚，让人一听就懂。"
+                            },
+                            {
+                                "role": "user",
+                                "content": simplePrompt
+                            }
+                        ],
+                        "stream": false,
+                        "max_tokens": 1500,
+                        "temperature": 0.8,
+                        "top_p": 0.9
+                    })
+                })
+            ]);
+
+            // 隐藏加载动画
+            loadingIndicator.style.display = 'none';
+
+            // 处理专业版响应
+            if (professionalResponse.ok) {
+                const data = await professionalResponse.json();
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    const interpretation = data.choices[0].message.content;
+                    displayInterpretation(interpretation, 'professional');
+                }
+            }
+
+            // 处理通俗版响应
+            if (simpleResponse.ok) {
+                const data = await simpleResponse.json();
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    const interpretation = data.choices[0].message.content;
+                    displayInterpretation(interpretation, 'simple');
+                }
+            }
+
+            // 如果任何一个失败，显示错误
+            if (!professionalResponse.ok || !simpleResponse.ok) {
+                throw new Error('API 调用失败');
+            }
+
+        } catch (error) {
+            loadingIndicator.style.display = 'none';
+            showMessage('解读失败: ' + error.message, 'error');
+            document.getElementById('aiInterpretationContainer').style.display = 'none';
+        }
+    }
+
+    // 显示特定版本的解读
+    function displayInterpretation(interpretation, version) {
+        const element = version === 'professional' ?
+            document.getElementById('fullInterpretation') :
+            document.getElementById('simpleInterpretation');
+
+        element.innerHTML = '';
+
+        // 对文本进行美化和格式化
+        const formattedText = formatInterpretationText(interpretation);
+        element.innerHTML = formattedText;
+    }
+
+    // 切换版本显示
+    function showVersion(version) {
+        const professionalDiv = document.getElementById('fullInterpretation');
+        const simpleDiv = document.getElementById('simpleInterpretation');
+        const switchBtn = document.getElementById('switchInterpretationBtn');
+        const switchHint = document.querySelector('.switch-hint');
+
+        if (version === 'professional') {
+            professionalDiv.style.display = 'block';
+            simpleDiv.style.display = 'none';
+            switchBtn.classList.remove('active');
+            switchBtn.querySelector('.btn-text').textContent = '说人话';
+            switchBtn.querySelector('.btn-icon').textContent = '🗣️';
+            switchHint.textContent = '点击切换通俗易懂版本';
+        } else {
+            professionalDiv.style.display = 'none';
+            simpleDiv.style.display = 'block';
+            switchBtn.classList.add('active');
+            switchBtn.querySelector('.btn-text').textContent = '专业版';
+            switchBtn.querySelector('.btn-icon').textContent = '📚';
+            switchHint.textContent = '点击返回专业版本';
+        }
+    }
+
+    // 说人话按钮点击事件
+    document.getElementById('switchInterpretationBtn').addEventListener('click', function() {
+        const isCurrentlyProfessional = document.getElementById('fullInterpretation').style.display !== 'none';
+        if (isCurrentlyProfessional) {
+            showVersion('simple');
+        } else {
+            showVersion('professional');
+        }
+    });
+
+    // 显示解读结果（旧函数，保留用于兼容）
     function displayResult(interpretation) {
         fullInterpretation.innerHTML = '';
 

@@ -161,3 +161,86 @@
 .paragraph:last-child {
     margin-bottom: 0;
 }
+
+/* 说人话按钮样式 */
+.interpretation-switch {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid rgba(64, 192, 87, 0.2);
+    text-align: center;
+}
+
+.btn-simple-talk {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, #40c057 0%, #2f9e44 100%);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(64, 192, 87, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-simple-talk:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(64, 192, 87, 0.6);
+}
+
+.btn-simple-talk:active {
+    transform: translateY(0);
+}
+
+.btn-simple-talk.active {
+    background: linear-gradient(135deg, #ff6b6b 0%, #fa5252 100%);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.btn-simple-talk.active:hover {
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+.btn-simple-talk .btn-icon {
+    font-size: 20px;
+    animation: wiggle 2s infinite;
+}
+
+@keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}
+
+.btn-simple-talk.active .btn-icon {
+    animation: none;
+}
+
+.switch-hint {
+    display: block;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+}
+
+.version-indicator {
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.version-indicator .current-version {
+    background: linear-gradient(135deg, #40c057 0%, #2f9e44 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+}

@@ -184,8 +184,23 @@
                                 <p>AI正在为您解读卦象...</p>
                             </div>
 
-                            <div id="fullInterpretation" class="full-interpretation">
-                                <!-- AI解读内容 -->
+                            <div id="aiInterpretationContainer" style="display: none;">
+                                <div class="interpretation-versions">
+                                    <div id="fullInterpretation" class="full-interpretation">
+                                        <!-- 专业版AI解读 -->
+                                    </div>
+                                    <div id="simpleInterpretation" class="full-interpretation" style="display: none;">
+                                        <!-- 通俗版AI解读 -->
+                                    </div>
+                                </div>
+
+                                <div class="interpretation-switch">
+                                    <button id="switchInterpretationBtn" class="btn-simple-talk">
+                                        <span class="btn-icon">🗣️</span>
+                                        <span class="btn-text">说人话</span>
+                                    </button>
+                                    <span class="switch-hint">点击切换通俗易懂的版本</span>
+                                </div>
                             </div>
                         </div>
 
