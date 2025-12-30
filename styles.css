@@ -960,6 +960,80 @@ footer {
     transform: rotate(30deg);
 }
 
+/* 卡片模态框 */
+.card-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.card-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 90vw;
+    max-height: 90vh;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    overflow: auto;
+}
+
+.card-modal-content canvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.card-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.card-actions button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-download {
+    background: linear-gradient(135deg, #40c057 0%, #2f9e44 100%);
+    color: white;
+}
+
+.btn-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(64, 192, 87, 0.4);
+}
+
+.btn-close-card {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+}
+
+.btn-close-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+}
+
 /* 响应式设计 */
 @media (max-width: 968px) {
     .container {
@@ -1029,6 +1103,46 @@ footer {
     }
 }
 
+/* 生成卡片按钮样式 */
+.btn-share-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-share-card:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(102, 126, 234, 0.6);
+}
+
+.btn-share-card:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-share-card:disabled {
+    background: linear-gradient(135deg, #ccc 0%, #999 100%);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    opacity: 0.6;
+}
+
+.btn-share-card .btn-icon {
+    font-size: 18px;
+}
+
 /* 说人话按钮样式 */
 .interpretation-switch {
     margin-top: 30px;
@@ -1055,13 +1169,21 @@ footer {
     overflow: hidden;
 }
 
-.btn-simple-talk:hover {
+.btn-simple-talk:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(64, 192, 87, 0.6);
 }
 
-.btn-simple-talk:active {
+.btn-simple-talk:active:not(:disabled) {
     transform: translateY(0);
+}
+
+.btn-simple-talk:disabled {
+    background: linear-gradient(135deg, #ccc 0%, #999 100%);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    opacity: 0.6;
 }
 
 .btn-simple-talk.active {
@@ -1069,7 +1191,7 @@ footer {
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
 }
 
-.btn-simple-talk.active:hover {
+.btn-simple-talk.active:hover:not(:disabled) {
     box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
 }
 

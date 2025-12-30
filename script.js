@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultSection = document.getElementById('resultSection');
     const loadingIndicator = document.getElementById('loadingIndicator');
     const fullInterpretation = document.getElementById('fullInterpretation');
+    const simpleInterpretation = document.getElementById('simpleInterpretation');
+    const switchInterpretationBtn = document.getElementById('switchInterpretationBtn');
+    const shareLeftBtn = document.getElementById('shareLeftBtn');
+    const shareRightBtn = document.getElementById('shareRightBtn');
 
     // 八卦数据库
     const trigrams = {
@@ -29,6 +33,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // 第一次使用，显示 API Key 输入框
         apiKeyModal.classList.add('show');
     }
+
+    // 初始化按钮状态 - 禁用说人话按钮（AI解读完成后才会启用）
+    switchInterpretationBtn.disabled = true;
 
     // 保存 API Key
     saveApiKeyBtn.addEventListener('click', function() {
@@ -336,6 +343,8 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             guidanceDescription.textContent = '整体卦象平稳，建议保持中庸之道，不急不躁，顺势而为，自然会有好的结果。';
         }
+
+        // 启用分享按钮（在AI解读完成后）
     }
 
     // 调用 AI API 解读卦象
@@ -601,6 +610,11 @@ ${hexagramDesc}
                     displayInterpretation(interpretation, 'simple');
                 }
             }
+
+            // 启用分享按钮和说人话按钮
+            shareLeftBtn.disabled = false;
+            shareRightBtn.disabled = false;
+            switchInterpretationBtn.disabled = false;
 
             // 如果任何一个失败，显示错误
             if (!professionalResponse.ok || !simpleResponse.ok) {
@@ -883,6 +897,304 @@ ${hexagramDesc}
         }, 4000);
     }
 
+    // 使用AI生成小红书风格卡片
+    async function generateShareCardWithAI(apiKey, column) {
+        try {
+            // 获取卦象信息
+            const hexagramName = document.getElementById('hexagramName').textContent || '未知卦象';
+            const eventText = document.getElementById('eventTextDisplay').textContent || '未填写问题';
+            const interpretationElement = column === 'left' ?
+                document.getElementById('fullInterpretation') :
+                document.getElementById('simpleInterpretation');
+            const interpretation = interpretationElement.textContent || '';
+
+            // 构建AI提示词
+            const prompt = `我需要为占卜结果生成一张小红书风格的精美分享卡片。请生成一段富有诗意和鼓励性的文案。
+
+占卜问题："${eventText}"
+
+卦象：${hexagramName}
+
+占卜解读：${interpretation}
+
+请生成一段小红书风格的美文，要求：
+1. 开头要有emoji和吸引人的标题
+2. 内容要温暖、鼓励、充满正能量✨
+3. 包含#话题标签，如#易经占卜 #六爻预测 #每日一占
+4. 语言要优美、文艺、符合小红书风格🌸
+5. 长度适中，适合配图
+6. 要有emoji装饰，让整体更生动活泼
+7. 结尾要有互动，引导用户点赞关注
+
+请用纯文本输出，不要包含任何markdown格式。`;
+
+            const response = await fetch('https://api.moonshot.cn/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    "model": "kimi-k2-0905-preview",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "你是一位擅长创作小红书爆款文案的达人，精通使用emoji、话题标签和优美的文字来创作吸引人的内容。你的文案总是充满正能量，深受年轻用户喜爱。"
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    "stream": false,
+                    "max_tokens": 1500,
+                    "temperature": 0.8,
+                    "top_p": 0.9
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API调用失败: ${response.status}`);
+            }
+
+            const data = await response.json();
+            let aiContent = '✨ 今日占卜 ✨\n\n' + (data.choices?.[0]?.message?.content ||
+                '每一次占卜，都是与未来的一次美好对话。无论卦象如何，保持积极的心态最重要！🌟\n\n#易经占卜 #六爻预测 #赛博算卦');
+
+            // 创建Canvas绘制卡片
+            const cardCanvas = document.createElement('canvas');
+            const ctx = cardCanvas.getContext('2d');
+
+            // 小红书推荐尺寸
+            const width = 900;
+            const height = 1200;
+            cardCanvas.width = width;
+            cardCanvas.height = height;
+
+            // 绘制精美背景渐变
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, '#ffd1dc');  // 粉色系
+            gradient.addColorStop(0.5, '#dda0dd'); // 紫色系
+            gradient.addColorStop(1, '#e6e6fa'); // 薰衣草紫
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+
+            // 添加装饰性光斑
+            ctx.globalAlpha = 0.3;
+            for (let i = 0; i < 8; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height * 0.6; // 主要集中在上方
+                const radius = Math.random() * 100 + 50;
+                const circleGradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+                circleGradient.addColorStop(0, 'rgba(255,255,255,0.6)');
+                circleGradient.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.fillStyle = circleGradient;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // 绘制主卡片区域
+            const padding = 60;
+            const cardWidth = width - padding * 2;
+            const cardHeight = height - padding * 2;
+
+            // 卡片背景（毛玻璃效果）
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.fillRect(padding, padding, cardWidth, cardHeight);
+
+            // 卡片边框
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(padding, padding, cardWidth, cardHeight);
+
+            // 主标题
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 60px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('✨ 赛博算卦 ✨', width / 2, padding + 80);
+
+            // 副标题
+            ctx.fillStyle = '#667eea';
+            ctx.font = '32px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+            ctx.fillText(hexagramName, width / 2, padding + 140);
+
+            // 占卜问题区域
+            const questionY = padding + 200;
+            ctx.fillStyle = '#34495e';
+            ctx.font = 'bold 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+            ctx.fillText('💭 我的问题', width / 2, questionY);
+
+            ctx.fillStyle = '#555';
+            ctx.font = '24px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+            ctx.textAlign = 'left';
+
+            // 自动换行处理
+            const maxWidth = cardWidth - 80;
+            const chars = eventText.split('');
+            let line = '';
+            let y = questionY + 50;
+
+            for (let i = 0; i < chars.length; i++) {
+                const testLine = line + chars[i];
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > maxWidth && line !== '') {
+                    ctx.fillText(line, padding + 40, y);
+                    line = chars[i];
+                    y += 40;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, padding + 40, y);
+
+            // AI文案区域
+            const contentY = y + 60;
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '26px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🌟 今日启示', width / 2, contentY);
+
+            // 绘制AI文案
+            ctx.fillStyle = '#34495e';
+            ctx.font = '22px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+            ctx.textAlign = 'left';
+
+            const contentLines = aiContent.split('\n');
+            let contentYPos = contentY + 40;
+            const lineHeight = 35;
+
+            for (const line of contentLines) {
+                if (contentYPos > height - 150) break; // 避免超出底部
+                if (line.trim()) {
+                    ctx.fillText(line.trim(), padding + 40, contentYPos);
+                    contentYPos += lineHeight;
+                }
+            }
+
+            // 底部装饰
+            ctx.fillStyle = '#9b59b6';
+            ctx.font = '24px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('✨ 相信自己，未来可期 ✨', width / 2, height - 60);
+
+            // 日期
+            const date = new Date().toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            ctx.fillStyle = '#7f8c8d';
+            ctx.font = '20px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+            ctx.fillText(date + ' · 赛博算卦', width / 2, height - 25);
+
+            return cardCanvas.toDataURL('image/png');
+
+        } catch (error) {
+            console.error('AI卡片生成失败:', error);
+            // 回退到旧版卡片
+            return generateShareCard(column);
+        }
+    }
+
+    // 显示卡片模态框
+    function showCardModal(imageDataUrl) {
+        // 创建模态框
+        let modal = document.getElementById('cardModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'cardModal';
+            modal.className = 'card-modal';
+            modal.innerHTML = `
+                <div class="card-modal-content">
+                    <h2 style="margin-bottom: 20px; color: #2c3e50;">生成的分享卡片</h2>
+                    <canvas id="generatedCard"></canvas>
+                    <div class="card-actions">
+                        <button id="downloadCard" class="btn-download">下载图片</button>
+                        <button id="closeCardModal" class="btn-close-card">关闭</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // 将生成的图片绘制到canvas
+        const canvas = document.getElementById('generatedCard');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+        };
+        img.src = imageDataUrl;
+
+        // 显示模态框
+        modal.classList.add('show');
+
+        // 绑定下载按钮
+        document.getElementById('downloadCard').onclick = function() {
+            const link = document.createElement('a');
+            link.download = `赛博算卦_${new Date().getTime()}.png`;
+            link.href = imageDataUrl;
+            link.click();
+        };
+
+        // 绑定关闭按钮
+        document.getElementById('closeCardModal').onclick = function() {
+            modal.classList.remove('show');
+        };
+
+        // 点击模态框外部关闭
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        };
+    }
+
+    // 绑定分享按钮点击事件
+    shareLeftBtn.addEventListener('click', async () => {
+        try {
+            const apiKey = localStorage.getItem('moonshot_api_key');
+            if (!apiKey) {
+                showMessage('请先设置 API Key', 'error');
+                return;
+            }
+
+            showMessage('正在生成精美的分享卡片...', 'success');
+            const imageDataUrl = await generateShareCardWithAI(apiKey, 'left');
+            if (imageDataUrl) {
+                showCardModal(imageDataUrl);
+            } else {
+                showMessage('生成卡片失败，请重试', 'error');
+            }
+        } catch (error) {
+            showMessage('生成卡片时出错: ' + error.message, 'error');
+        }
+    });
+
+    shareRightBtn.addEventListener('click', async () => {
+        try {
+            const apiKey = localStorage.getItem('moonshot_api_key');
+            if (!apiKey) {
+                showMessage('请先设置 API Key', 'error');
+                return;
+            }
+
+            showMessage('正在生成精美的分享卡片...', 'success');
+            const imageDataUrl = await generateShareCardWithAI(apiKey, 'right');
+            if (imageDataUrl) {
+                showCardModal(imageDataUrl);
+            } else {
+                showMessage('生成卡片失败，请重试', 'error');
+            }
+        } catch (error) {
+            showMessage('生成卡片时出错: ' + error.message, 'error');
+        }
+    });
+
     // 回车键触发保存 API Key
     apiKeyInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
@@ -897,4 +1209,147 @@ ${hexagramDesc}
             delete this.dataset.placeholder;
         }
     });
+
+    // 旧版卡片生成函数（作为备份）
+    function generateShareCard(column) {
+        const cardCanvas = document.createElement('canvas');
+        const ctx = cardCanvas.getContext('2d');
+
+        // 设置卡片尺寸 (小红书推荐尺寸)
+        const width = 900;
+        const height = 1200;
+        cardCanvas.width = width;
+        cardCanvas.height = height;
+
+        // 背景渐变
+        const gradient = ctx.createLinearGradient(0, 0, width, height);
+        gradient.addColorStop(0, '#667eea');
+        gradient.addColorStop(1, '#764ba2');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+
+        // 添加装饰图案
+        ctx.globalAlpha = 0.1;
+        for (let i = 0; i < 50; i++) {
+            const x = Math.random() * width;
+            const y = Math.random() * height;
+            const radius = Math.random() * 30 + 10;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        // 卡片容器
+        const cardWidth = 800;
+        const cardHeight = 1100;
+        const cardX = (width - cardWidth) / 2;
+        const cardY = (height - cardHeight) / 2;
+
+        // 卡片背景
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+
+        // 边框
+        ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(cardX, cardY, cardWidth, cardHeight);
+
+        // 标题
+        ctx.fillStyle = '#2c3e50';
+        ctx.font = 'bold 48px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('赛博算卦', cardX + cardWidth / 2, cardY + 80);
+
+        // 副标题
+        ctx.font = '28px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+        ctx.fillStyle = '#667eea';
+        ctx.fillText('AI六爻预测', cardX + cardWidth / 2, cardY + 130);
+
+        // 卦象区域
+        ctx.strokeStyle = '#667eea';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(cardX + 50, cardY + 180, cardWidth - 100, 300);
+
+        // 获取卦象信息
+        const hexagramName = document.getElementById('hexagramName').textContent || '未知卦象';
+        const eventText = document.getElementById('eventTextDisplay').textContent || '未填写问题';
+
+        // 卦象名称
+        ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+        ctx.fillStyle = '#333';
+        ctx.fillText(hexagramName, cardX + cardWidth / 2, cardY + 250);
+
+        // 问题
+        ctx.font = '24px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+        ctx.fillStyle = '#555';
+        ctx.textAlign = 'left';
+
+        // 处理长文本换行
+        const maxWidth = cardWidth - 100;
+        const words = eventText.split('');
+        let line = '';
+        let y = cardY + 320;
+
+        for (let i = 0; i < words.length; i++) {
+            const testLine = line + words[i];
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && line !== '') {
+                ctx.fillText(line, cardX + 70, y);
+                line = words[i];
+                y += 40;
+            } else {
+                line = testLine;
+            }
+        }
+        ctx.fillText(line, cardX + 70, y);
+
+        // 二维码区域
+        const qrSize = 200;
+        const qrX = cardX + cardWidth - qrSize - 50;
+        const qrY = cardY + cardHeight - qrSize - 50;
+
+        // 二维码背景
+        ctx.fillStyle = 'white';
+        ctx.fillRect(qrX, qrY, qrSize, qrSize);
+
+        // 简易二维码图案
+        ctx.fillStyle = '#333';
+        const moduleSize = qrSize / 25;
+        for (let row = 0; row < 25; row++) {
+            for (let col = 0; col < 25; col++) {
+                if ((row < 7 && (col < 7 || col > 17)) ||
+                    (row > 17 && col < 7) ||
+                    ((row + col) % 3 === 0 && (row * col) % 5 !== 0)) {
+                    ctx.fillRect(qrX + col * moduleSize, qrY + row * moduleSize, moduleSize, moduleSize);
+                }
+            }
+        }
+
+        // 扫码提示
+        ctx.font = '20px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+        ctx.fillStyle = '#667eea';
+        ctx.textAlign = 'left';
+        ctx.fillText('扫码体验赛博算卦', cardX + 50, qrY + 50);
+
+        // 宣传语
+        ctx.font = '24px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+        ctx.fillStyle = '#999';
+        ctx.fillText('AI驱动的六爻预测', cardX + 50, qrY + 100);
+        ctx.fillText('探索未来之谜', cardX + 50, qrY + 140);
+
+        // 底部日期
+        const date = new Date().toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        ctx.font = '18px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial';
+        ctx.fillStyle = '#999';
+        ctx.textAlign = 'center';
+        ctx.fillText(date, cardX + cardWidth / 2, cardY + cardHeight - 30);
+
+        return cardCanvas.toDataURL('image/png');
+    }
 });
